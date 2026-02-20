@@ -1,0 +1,7 @@
+<svg width="300" height="60" viewBox="0 0 300 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <text x="0" y="45" font-family="Space Grotesk" font-weight="700" font-size="48" fill="#E5E5E5" letter-spacing="-2">
+    Road<tspan fill="#FF6B00">SaaS</tspan><tspan fill="#FF6B00">.</tspan>
+  </text>
+  <rect x="2" y="55" width="230" height="4" fill="#404040" rx="2"/>
+  <rect x="115" y="55" width="40" height="4" fill="#FF6B00" rx="2"/>
+</svg>
