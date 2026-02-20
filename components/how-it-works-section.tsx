@@ -37,13 +37,13 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="px-6 py-24 md:py-32">
+    <section className="px-6 py-28 md:py-36">
       <div className="mx-auto max-w-3xl">
         <ScrollReveal>
-          <h2 className="mb-4 text-center font-serif text-3xl font-semibold text-foreground md:text-4xl text-balance">
+          <h2 className="mb-5 text-center font-serif text-3xl font-semibold text-foreground md:text-4xl text-balance">
             Como funciona
           </h2>
-          <p className="mx-auto mb-16 max-w-md text-center text-sm text-muted-foreground">
+          <p className="mx-auto mb-20 max-w-md text-center text-sm text-muted-foreground">
             4 passos. Menos de 1 hora. Plano completo.
           </p>
         </ScrollReveal>

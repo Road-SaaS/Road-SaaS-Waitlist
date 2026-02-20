@@ -30,7 +30,7 @@ const features = [
 
 export function SolutionSection() {
   return (
-    <section className="relative px-6 py-24 md:py-32">
+    <section className="relative px-6 py-28 md:py-36">
       {/* Subtle vertical road marking */}
       <div
         className="pointer-events-none absolute inset-0 flex justify-center"
@@ -47,10 +47,10 @@ export function SolutionSection() {
 
       <div className="relative mx-auto max-w-5xl">
         <ScrollReveal>
-          <h2 className="mb-4 text-center font-serif text-3xl font-semibold text-foreground md:text-4xl text-balance">
+          <h2 className="mb-5 text-center font-serif text-3xl font-semibold text-foreground md:text-4xl text-balance">
             O RoadSaaS é o mapa.
           </h2>
-          <p className="mx-auto mb-16 max-w-xl text-center text-sm text-muted-foreground">
+          <p className="mx-auto mb-20 max-w-xl text-center text-sm text-muted-foreground">
             3 pilares pra você sair do zero com direção.
           </p>
         </ScrollReveal>

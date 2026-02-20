@@ -86,6 +86,37 @@ describe("POST /api/waitlist — logica de inscricao", () => {
     expect(data).toBeDefined()
     expect(data!.status).toBe("subscribed")
   })
+
+  it("deve persistir name e experience_level quando enviados", async () => {
+    const emailExp = `test-api-exp-${Date.now()}@test.com`
+    const emailExpNormalized = emailExp.toLowerCase().trim()
+    const tokenHash = hashToken(crypto.randomBytes(32).toString("hex"))
+    const ipHash = crypto
+      .createHmac("sha256", env().WAITLIST_UNSUBSCRIBE_SECRET)
+      .update("127.0.0.1")
+      .digest("hex")
+
+    const { data, error } = await db
+      .from("waitlist_signups")
+      .insert({
+        email: emailExp,
+        email_normalized: emailExpNormalized,
+        name: "João Fundador",
+        source: "landing",
+        experience_level: "advanced",
+        user_agent: "vitest",
+        ip_hash: ipHash,
+        unsubscribe_token_hash: tokenHash,
+      })
+      .select()
+      .single()
+
+    expect(error).toBeNull()
+    expect(data).toBeDefined()
+    expect(data!.name).toBe("João Fundador")
+    expect(data!.experience_level).toBe("advanced")
+    insertedIds.push(data!.id)
+  })
 })
 
 describe("POST /api/waitlist/unsubscribe — logica de descadastro", () => {

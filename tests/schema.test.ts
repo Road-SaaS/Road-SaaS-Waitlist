@@ -5,12 +5,17 @@ describe("schema — tabela waitlist_signups", () => {
   const client = supabaseAdmin()
   const testEmail = `test-schema-${Date.now()}@test.com`
   const testEmailNormalized = testEmail.toLowerCase().trim()
+  const testEmailNoLevel = `test-schema-nolevel-${Date.now()}@test.com`
+  const testEmailNoLevelNormalized = testEmailNoLevel.toLowerCase().trim()
   let insertedId: string | null = null
+  let insertedIdNoLevel: string | null = null
 
   afterAll(async () => {
-    // Limpa registros de teste
     if (insertedId) {
       await client.from("waitlist_signups").delete().eq("id", insertedId)
+    }
+    if (insertedIdNoLevel) {
+      await client.from("waitlist_signups").delete().eq("id", insertedIdNoLevel)
     }
   })
 
@@ -30,6 +35,7 @@ describe("schema — tabela waitlist_signups", () => {
         email: testEmail,
         email_normalized: testEmailNormalized,
         source: "test",
+        experience_level: "low-code",
         utm_source: "google",
         utm_medium: "cpc",
         utm_campaign: "launch",
@@ -51,6 +57,7 @@ describe("schema — tabela waitlist_signups", () => {
     expect(data!.email_normalized).toBe(testEmailNormalized)
     expect(data!.status).toBe("subscribed")
     expect(data!.source).toBe("test")
+    expect(data!.experience_level).toBe("low-code")
     expect(data!.created_at).toBeDefined()
     expect(data!.utm_source).toBe("google")
 
@@ -71,6 +78,28 @@ describe("schema — tabela waitlist_signups", () => {
       .single()
 
     expect(data!.status).toBe("subscribed")
+  })
+
+  it("deve aceitar insert sem experience_level (null)", async () => {
+    const { data, error } = await client
+      .from("waitlist_signups")
+      .insert({
+        email: testEmailNoLevel,
+        email_normalized: testEmailNoLevelNormalized,
+        source: "test",
+        utm_source: null,
+        user_agent: "vitest",
+        ip_hash: "hash_nolevel",
+        unsubscribe_token_hash: "token_nolevel_test",
+      })
+      .select()
+      .single()
+
+    expect(error).toBeNull()
+    expect(data).toBeDefined()
+    expect(data!.email).toBe(testEmailNoLevel)
+    expect(data!.experience_level).toBeNull()
+    insertedIdNoLevel = data!.id
   })
 
   it("deve rejeitar email_normalized duplicado (unique index)", async () => {

@@ -14,8 +14,7 @@ export function Navbar() {
   }, [])
 
   const scrollToWaitlist = () => {
-    const el = document.getElementById("cta-waitlist")
-    el?.scrollIntoView({ behavior: "smooth" })
+    document.getElementById("waitlist-form")?.scrollIntoView({ behavior: "smooth" })
   }
 
   return (

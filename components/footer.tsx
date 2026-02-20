@@ -43,12 +43,21 @@ export function Footer() {
       </div>
 
       <div className="mt-8 flex flex-col items-center gap-2 text-xs text-muted-foreground/40">
-        <Link
-          href="/privacy"
-          className="text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-        >
-          Politica de Privacidade
-        </Link>
+        <span className="flex flex-wrap items-center justify-center gap-1">
+          <Link
+            href="/privacy"
+            className="text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            Política de Privacidade
+          </Link>
+          <span>{" | "}</span>
+          <Link
+            href="/terms"
+            className="text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            Termos de Uso
+          </Link>
+        </span>
         <span>{"© 2026 RoadSaaS"}</span>
       </div>
     </footer>

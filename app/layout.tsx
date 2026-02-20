@@ -22,10 +22,19 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'RoadSaaS — Waitlist | O caminho mais curto entre sua ideia e seu MVP',
   description:
-    'Pare de improvisar. Entre na waitlist do RoadSaaS e receba acesso primeiro ao beta. Em menos de 1 hora, você sai com PRD, SRS, ADR e um roadmap acionável — adaptado ao seu nível técnico.',
+    'IA que transforma sua ideia de SaaS em PRD, especificação técnica e roadmap personalizado. Entre na lista de espera.',
   icons: {
     icon: '/roadsaas-avatar-v3.png',
     apple: '/roadsaas-avatar-v3.png',
+  },
+  openGraph: {
+    title: 'RoadSaaS — O caminho mais curto entre sua ideia e seu MVP',
+    description:
+      'IA que transforma sua ideia de SaaS em PRD, especificação técnica e roadmap personalizado.',
+    url: 'https://www.roadsaas.com',
+    siteName: 'RoadSaaS',
+    locale: 'pt_BR',
+    type: 'website',
   },
 }
 

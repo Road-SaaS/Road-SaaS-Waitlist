@@ -2,7 +2,7 @@
 
 import { TypewriterText } from "./typewriter-text"
 import { WaitlistForm } from "./waitlist-form"
-import { CountUp } from "./count-up"
+import { WaitlistCount } from "./waitlist-count"
 import { motion } from "framer-motion"
 import { ChevronDown, Construction } from "lucide-react"
 
@@ -56,20 +56,18 @@ export function HeroSection() {
         transition={{ duration: 0.7, delay: 1.0, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="mb-8"
       >
-        <WaitlistForm id="hero-waitlist" showHelperText />
+        <WaitlistForm id="hero-waitlist" formId="waitlist-form" showHelperText />
       </motion.div>
 
       {/* Social proof */}
-      <motion.p
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 1.3 }}
-        className="mb-16 flex items-center gap-1.5 text-sm text-muted-foreground"
+        className="mb-16 flex items-center justify-center"
       >
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-road-green)]" />
-        <CountUp target={247} />
-        {" fundadores solo já entraram na lista. Entra também."}
-      </motion.p>
+        <WaitlistCount />
+      </motion.div>
 
       {/* Scroll indicator */}
       <motion.div

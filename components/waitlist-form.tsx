@@ -2,11 +2,19 @@
 
 import { useState, useEffect, type FormEvent } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle2, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { captureUtms, getUtmData } from "@/lib/client/utm"
+
+const EXPERIENCE_OPTIONS = [
+  { value: "no-code", label: "Não sei programar (no-code)" },
+  { value: "low-code", label: "Sei o básico (low-code)" },
+  { value: "intermediate", label: "Dev intermediário" },
+  { value: "advanced", label: "Dev avançado" },
+] as const
 
 type WaitlistFormProps = {
   id?: string
+  formId?: string
   showHelperText?: boolean
   helperText?: string
 }
@@ -15,33 +23,59 @@ type FormState = "idle" | "loading" | "success" | "error" | "rate-limited"
 
 const DEFAULT_HELPER_TEXT = "Sem spam. Um email quando abrir. Só."
 
+const SUCCESS_MESSAGE = "✅ Você está na lista! Vamos te avisar quando abrir."
+
 function isValidEmail(value: string) {
   const email = value.trim()
   if (!email) return false
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+const inputBase =
+  "w-full rounded-lg border bg-[#1C1C1C] px-4 py-3 text-[#E5E5E5] placeholder-[#9CA3AF] outline-none transition-all focus:border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00] focus:ring-offset-0"
+const inputError = "border-[#EF4444]"
+const inputNormal = "border-[#404040]"
+
 export function WaitlistForm({
   id,
+  formId,
   showHelperText = false,
   helperText = DEFAULT_HELPER_TEXT,
 }: WaitlistFormProps) {
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [experienceLevel, setExperienceLevel] = useState("")
   const [state, setState] = useState<FormState>("idle")
-  const [successMessage, setSuccessMessage] = useState(
-    "Pronto. Você tá na lista. Eu te aviso quando abrir."
-  )
+  const [nameError, setNameError] = useState(false)
+  const [emailError, setEmailError] = useState(false)
+  const [levelError, setLevelError] = useState(false)
 
   useEffect(() => {
     captureUtms()
   }, [])
 
+  const clearFieldErrors = () => {
+    setNameError(false)
+    setEmailError(false)
+    setLevelError(false)
+    if (state === "error") setState("idle")
+  }
+
+  const validate = (): boolean => {
+    const nameValid = name.trim().length >= 2
+    const emailValid = isValidEmail(email)
+    const levelValid = experienceLevel.trim().length > 0
+
+    setNameError(!nameValid)
+    setEmailError(!emailValid)
+    setLevelError(!levelValid)
+    return nameValid && emailValid && levelValid
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!isValidEmail(email)) {
-      setState("error")
-      return
-    }
+    if (!validate()) return
+
     setState("loading")
 
     try {
@@ -52,6 +86,8 @@ export function WaitlistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim(),
+          name: name.trim(),
+          experience_level: experienceLevel.trim() || null,
           ...utmData,
         }),
       })
@@ -66,14 +102,6 @@ export function WaitlistForm({
         return
       }
 
-      const data = await res.json()
-
-      if (data.alreadySubscribed) {
-        setSuccessMessage("Você já está na lista! Te aviso quando abrir.")
-      } else {
-        setSuccessMessage("Pronto. Você tá na lista. Eu te aviso quando abrir.")
-      }
-
       setState("success")
     } catch {
       setState("error")
@@ -83,42 +111,113 @@ export function WaitlistForm({
   if (state === "success") {
     return (
       <motion.div
-        id={id}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        id={formId ?? id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex items-center gap-2.5 rounded-md border border-[var(--color-road-green)]/30 bg-[var(--color-road-green)]/10 px-6 py-3"
+        className="flex items-center justify-center gap-2.5 rounded-lg px-6 py-4"
       >
-        <CheckCircle2
-          className="h-4.5 w-4.5 text-[var(--color-road-green)]"
-          strokeWidth={1.5}
-        />
-        <span className="font-sans text-sm font-medium text-[var(--color-road-green)]">
-          {successMessage}
+        <span className="text-base font-medium text-[#22C55E]">
+          {SUCCESS_MESSAGE}
         </span>
       </motion.div>
     )
   }
 
-  return (
+  const formContent = (
     <form
       id={id}
       onSubmit={handleSubmit}
-      className="flex w-full max-w-md flex-col gap-3"
+      className="flex w-full max-w-md flex-col gap-4"
     >
-      <div className="flex flex-1 flex-col gap-1.5">
-        <input
-          type="email"
-          placeholder="seu@email.com"
-          value={email}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="waitlist-name" className="sr-only">
+            Seu nome
+          </label>
+          <input
+            id="waitlist-name"
+            type="text"
+            placeholder="Seu nome"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value)
+              setNameError(false)
+              clearFieldErrors()
+            }}
+            disabled={state === "loading"}
+            aria-invalid={nameError}
+            className={`${inputBase} ${nameError ? inputError : inputNormal}`}
+            minLength={2}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="waitlist-email" className="sr-only">
+            Seu melhor email
+          </label>
+          <input
+            id="waitlist-email"
+            type="email"
+            placeholder="Seu melhor email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setEmailError(false)
+              clearFieldErrors()
+            }}
+            disabled={state === "loading"}
+            required
+            aria-invalid={emailError}
+            className={`${inputBase} ${emailError ? inputError : inputNormal}`}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="waitlist-level" className="sr-only">
+          Seu nível técnico
+        </label>
+        <select
+          id="waitlist-level"
+          value={experienceLevel}
           onChange={(e) => {
-            setEmail(e.target.value)
-            if (state === "error") setState("idle")
+            setExperienceLevel(e.target.value)
+            setLevelError(false)
+            clearFieldErrors()
           }}
-          required
-          aria-invalid={state === "error"}
-          className="w-full rounded-md border border-border bg-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(255,107,0,0.1)]"
-        />
+          disabled={state === "loading"}
+          aria-invalid={levelError}
+          className={`${inputBase} ${levelError ? inputError : inputNormal}`}
+        >
+          <option value="" disabled>
+            Seu nível técnico
+          </option>
+          {EXPERIENCE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <motion.button
+          type="submit"
+          disabled={state === "loading"}
+          whileHover={{ scale: state === "loading" ? 1 : 1.02 }}
+          whileTap={{ scale: state === "loading" ? 1 : 0.98 }}
+          className="w-full cursor-pointer rounded-lg bg-[#FF6B00] px-4 py-3 font-bold text-white transition-colors hover:bg-[#E65D00] disabled:cursor-not-allowed disabled:opacity-70"
+          aria-label="Inscrever na lista de espera"
+        >
+          {state === "loading" ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+              Entrando na lista...
+            </span>
+          ) : (
+            "Quero acesso primeiro 🚀"
+          )}
+        </motion.button>
 
         <AnimatePresence mode="popLayout" initial={false}>
           {state === "error" ? (
@@ -128,9 +227,9 @@ export function WaitlistForm({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -2 }}
               transition={{ duration: 0.2 }}
-              className="text-xs text-destructive"
+              className="text-sm text-[#EF4444]"
             >
-              Algo deu errado. Confere o email e tenta de novo.
+              Ops, algo deu errado. Tenta de novo?
             </motion.p>
           ) : state === "rate-limited" ? (
             <motion.p
@@ -139,7 +238,7 @@ export function WaitlistForm({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -2 }}
               transition={{ duration: 0.2 }}
-              className="text-xs text-[var(--color-safety-orange)]"
+              className="text-sm text-[#FF6B00]"
             >
               Calma, muitas tentativas. Tenta de novo em alguns minutos.
             </motion.p>
@@ -157,22 +256,16 @@ export function WaitlistForm({
           ) : null}
         </AnimatePresence>
       </div>
-      <motion.button
-        type="submit"
-        disabled={state === "loading"}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
-        className="cursor-pointer rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:bg-[var(--color-safety-orange-hover)] hover:shadow-[0_0_24px_rgba(255,107,0,0.35)] disabled:opacity-70"
-      >
-        {state === "loading" ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
-            Entrando na lista…
-          </span>
-        ) : (
-          "Quero acesso primeiro"
-        )}
-      </motion.button>
     </form>
   )
+
+  if (formId) {
+    return (
+      <div id={formId} className="w-full max-w-md">
+        {formContent}
+      </div>
+    )
+  }
+
+  return <div className="w-full max-w-md">{formContent}</div>
 }

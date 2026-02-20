@@ -12,8 +12,12 @@ import {
 
 const MAX_FIELD_LENGTH = 500
 
+const EXPERIENCE_LEVELS = ["no-code", "low-code", "intermediate", "advanced"] as const
+
 const waitlistSchema = z.object({
   email: z.string().email().max(320),
+  name: z.string().min(2).max(100).nullish(),
+  experience_level: z.enum(EXPERIENCE_LEVELS).nullish(),
   utm_source: z.string().max(MAX_FIELD_LENGTH).nullish(),
   utm_medium: z.string().max(MAX_FIELD_LENGTH).nullish(),
   utm_campaign: z.string().max(MAX_FIELD_LENGTH).nullish(),
@@ -127,7 +131,9 @@ export async function POST(req: NextRequest) {
     const { error: insertError } = await db.from("waitlist_signups").insert({
       email: data.email.trim(),
       email_normalized: emailNormalized,
+      name: data.name?.trim() ?? null,
       source: "landing",
+      experience_level: data.experience_level ?? null,
       utm_source: data.utm_source || null,
       utm_medium: data.utm_medium || null,
       utm_campaign: data.utm_campaign || null,
