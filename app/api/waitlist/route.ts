@@ -5,7 +5,10 @@ import { env } from "@/lib/env"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { checkWaitlistRateLimit } from "@/lib/rate-limit/waitlist"
 import { sendWaitlistWelcomeEmail } from "@/lib/email/resend-client"
-import { isAllowedOrigin } from "@/lib/security/request-origin"
+import {
+  isAllowedOrigin,
+  getAllowedOriginBases,
+} from "@/lib/security/request-origin"
 
 const MAX_FIELD_LENGTH = 500
 
@@ -52,7 +55,7 @@ function generateUnsubscribeToken(): {
 export async function POST(req: NextRequest) {
   try {
     // 0. CSRF: rejeitar requests de origem nao permitida
-    if (!isAllowedOrigin(req.headers, env().PUBLIC_BASE_URL)) {
+    if (!isAllowedOrigin(req.headers, getAllowedOriginBases(env().PUBLIC_BASE_URL))) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 })
     }
 

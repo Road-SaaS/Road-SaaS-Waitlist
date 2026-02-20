@@ -3,11 +3,24 @@ import { z } from "zod"
 import crypto from "crypto"
 import { env } from "@/lib/env"
 import { supabaseAdmin } from "@/lib/supabase/admin"
-import { isAllowedOrigin } from "@/lib/security/request-origin"
+import {
+  isAllowedOrigin,
+  getAllowedOriginBases,
+} from "@/lib/security/request-origin"
+import { checkUnsubscribeRateLimit } from "@/lib/rate-limit/unsubscribe"
 
+// Token e exatamente 64 caracteres hex (32 bytes via crypto.randomBytes(32).toString("hex"))
 const unsubscribeSchema = z.object({
-  token: z.string().min(32).max(128),
+  token: z.string().regex(/^[a-f0-9]{64}$/),
 })
+
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for")
+  if (forwarded) return forwarded.split(",")[0].trim()
+  const realIp = req.headers.get("x-real-ip")
+  if (realIp) return realIp.trim()
+  return "unknown"
+}
 
 function hashToken(token: string): string {
   return crypto
@@ -18,8 +31,22 @@ function hashToken(token: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!isAllowedOrigin(req.headers, env().PUBLIC_BASE_URL)) {
+    if (!isAllowedOrigin(req.headers, getAllowedOriginBases(env().PUBLIC_BASE_URL))) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 })
+    }
+
+    const ip = getClientIp(req)
+    const rateResult = await checkUnsubscribeRateLimit(ip)
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { ok: false, error: "Muitas tentativas. Tente novamente mais tarde." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateResult.retryAfterMs / 1000)),
+          },
+        }
+      )
     }
 
     let body: unknown
