@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import Script from 'next/script'
 import './globals.css'
 
@@ -54,6 +55,7 @@ export default function RootLayout({
       >
         {children}
         <Analytics />
+        <SpeedInsights />
         {/* UTMiFy — captura UTMs no provider (criar conta em utmify.com.br) */}
         <Script
           src="https://cdn.utmify.com.br/scripts/utms/latest.js"
